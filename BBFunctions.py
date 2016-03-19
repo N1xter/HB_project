@@ -1,9 +1,11 @@
 from string import join
 import csv
 import re
+from operator import itemgetter
 
 Beer_List = []
 
+"""READER FUNCTIONS"""
 #This function uses various parsing techniques to create a list of dictionaries. Each dictionary is one beer.
 def Matagrano_Reader(filename):
 	#open the file
@@ -55,7 +57,7 @@ def Matagrano_Reader(filename):
 				Beer["PSize"] = "22"
 				Beer["PType(Keg or PKG)"] = "PKG"
 			Beer["Name"] = join(Mat_item," ")
-			print Beer["Name"]
+			# print Beer["Name"]
 			""" this prompts for user inputs when the value is None"""
 			Bkeys = Beer.keys()
 			for key in Bkeys:
@@ -77,7 +79,7 @@ def Artisan_Reader(filename):
 	Art_RE_K_bbl = re.compile('([a-zA-Z0-9 ]+), ([a-zA-Z0-9 ]+), ([a-zA-Z/\- ]+)(\d+\.\d+)% (\d\/\d) bbl ([a-zA-Z]+) \$(\d+)')
 	with open(filename)as artisan:
 		artisan_raw_list = artisan.readlines()
-		# I should probably write a function that automates the creation of these for loops based on a list of regex (or maybe a dictionary?)
+		# I should probably write a function that automates the creation of these for this loop based on a list of regex (or maybe a dictionary?)
 		for text in artisan_raw_list:
 			Beer = {"Brewery":None, "Name": None, "Style":None, "ABV":None, "Raw_Package_data":None, "PType(Keg or PKG)": None, "PSize":None, "Distributor":"Artisan", "UnitCount":None, "Price":None,}
 			#These are bottle products
@@ -139,7 +141,7 @@ def Artisan_Reader(filename):
 				Beer["UnitCount"] = 1
 				Beer["PSize"] = Art_line.group(5)
 				Beer["Price"] = Art_line.group(7)
-				Beer["PType(Keg or PKG)"] = Art_line.group(6)
+				Beer["PType(Keg or PKG)"] = "KEG"
 				Beer["Raw_Package_data"] = Art_line.group(5), "bbl", Art_line.group(6)
 				if Beer["PSize"] == "1/2":
 					Beer["PSize"] = "15.5"
@@ -155,58 +157,12 @@ def Artisan_Reader(filename):
 				Beer["UnitCount"] = 1
 				Beer["PSize"] = Art_line.group(5)
 				Beer["Price"] = Art_line.group(7)
-				Beer["PType(Keg or PKG)"] = Art_line.group(6)
+				Beer["PType(Keg or PKG)"] = "KEG"
 				Beer["Raw_Package_data"] = Art_line.group(5), "L", Art_line.group(6)
 				Beer_List.append(Beer)
 			else:
 				pass
 
-
-
-
-
-"""old code"""
-		# #this splits the raw list into a new list for every line
-		# art_item = x.split('\n')
-		# #the following removes a consistent extra space that occurs at the end of every line
-		# art_item.pop()
-					# for text in artisan:
-			# 	Art_line= Art_RE_ml.search(text)
-			# 	if Art_line == None:
-			# 		pass
-			# 	else:
-			# 		print Art_line.group()
-#more old code
-			# for text in artisan:
-			# 	Art_line = Art_RE_oz.search(text)
-			# 	if Art_line == None:
-			# 		pass
-			# 	else:
-			# 		print Art_line.group()
-				
-			# for text in artisan:
-			# 	Art_line = Art_RE_cl.search(text)
-			# 	if Art_line == None:
-			# 		pass
-			# 	else:
-			# 		print Art_line.group()
-
-			# for text in artisan:
-			# 	Art_line = Art_RE_dash.search(text)
-			# 	if Art_line == None:
-			# 		pass
-			# 	else:
-			# 		print Art_line.group()
-
-	# 	artisan_raw_list = artisan.readlines()
-	# for x in artisan_raw_list:
-	# 	#this skips (presently) unuseful lines
-	# 	if x ==' ' or x == '' or x == 'U.S.' or x == 'Belgium':
-	# 		pass
-	# 	else:
-	
-
-	# print artisan_raw_list
 
 #This Function parses information from a CSV file
 def Henhouse_Reader(filename): #sTILL NEED TO REMOVE BLANKS FROM BEER LIST
@@ -280,7 +236,7 @@ def DBI_Reader(filename):
 """
 TESTING 
 These call the function(s) and prints the results 
-(DO NOT run in Sublimne as user input is required!)
+(DO NOT run in Sublime as user input is required!)
 """
 
 # Matagrano_Reader("Matagrano_sample.txt")
@@ -291,7 +247,12 @@ These call the function(s) and prints the results
 
 
 #next line for testing
-# print "Welcome, Beer Buyer"
+
+"""FILE CHOOSING FUNCTIONS"""
+"""
+The following functions ask the user for file infromation, then call the reader functions.
+These are the functions that are called in the main program for the reader phase.
+"""
 #This asks the user if they want to upload a Matagrano file, then runs the reader function:
 def Mat_Choose_File():
 	Mat_Q = raw_input("Would you like to choose a Matragrano file? Y or N: ")
@@ -302,7 +263,6 @@ def Mat_Choose_File():
 		pass
 
 #Does the same for DBI
-#This asks the user if they want to upload a Matagrano file, then runs the reader function:
 def DBI_Choose_File():
 	DBI_Q = raw_input("Would you like to choose a DBI file? Y or N: ")
 	if DBI_Q == "Y" or DBI_Q == "y":
@@ -311,6 +271,7 @@ def DBI_Choose_File():
 	else:
 		pass
 
+#Does the same for Artisan
 def Art_Choose_File():
 	Art_Q = raw_input("Would you like to choose an Artisan file? Y or N: ")
 	if Art_Q == "Y" or Art_Q == "y":
@@ -319,7 +280,7 @@ def Art_Choose_File():
 	else:
 		pass
 
-
+#Does the same for Henhouse
 def Hen_Choose_File():
 	Hen_Q = raw_input("Would you like to choose a Henhouse file? Y or N: ")
 	if Hen_Q == "Y" or Hen_Q == "y":
@@ -332,3 +293,112 @@ def Hen_Choose_File():
 """Testing for file choosing below"""
 #Mat_Choose_File()
 # DBI_Choose_File()
+
+
+
+"""
+FILTER FUNCTIONS
+"""
+# Testing_List = [{'Raw_Package_data': ('1/2', 'bbl', 'keg'), 'Style': 'Tuple Ale ', 'Name': 'Nut Brown', 'ABV': '5.0', 'Distributor': 'Artisan', 'Price': '190', 'UnitCount': 1, 'PType(Keg or PKG)': 'KEG', 'Brewery': 'AleSmith Brewing', 'PSize': '15.5'},{'Raw_Package_data': ('1/2', 'bbl', 'keg'), 'Style': 'English-Style Ale ', 'Name': 'Python Beer', 'ABV': '6.66', 'Distributor': 'hacker', 'Price': '3', 'UnitCount': 1, 'PType(Keg or PKG)': 'KEG', 'Brewery': 'Python Brewing', 'PSize': '15.5'}, {'Raw_Package_data': ('1/6', 'bbl', 'keg'), 'Style': 'English-Style Ale ', 'Name': 'Nut Brown', 'ABV': '5.0', 'Distributor': 'Artisan', 'Price': '90', 'UnitCount': 1, 'PType(Keg or PKG)': 'PKG', 'Brewery': 'AleSmith Brewing', 'PSize': '5'}]
+
+
+def Beer_List_Filter(Blist):
+	Filtered_Beer_List = []
+	filter_resp = raw_input("enter your selection: ")
+	while filter_resp != "1" and filter_resp != "2"and filter_resp != "3":
+		print "ERROR, you did not enter a valid selection."
+		filter_resp = raw_input("enter your selection: ")
+	if filter_resp == "1":
+		Filtered_Beer_List = Beer_List
+	else:
+		for BEER in Blist:
+			if filter_resp == "2":
+				if BEER["PType(Keg or PKG)"] == "KEG":
+					Filtered_Beer_List.append(BEER)
+			elif filter_resp == "3":
+				if BEER["PType(Keg or PKG)"] == "PKG":
+					Filtered_Beer_List.append(BEER)
+	return Filtered_Beer_List
+			# else:
+			# 	print "ERROR, you did not enter a valid selection."
+			# 	#I would like to be able to call the function again/start over if this error is acchieved.
+
+#next line for testing
+# Beer_List_Filter(Beer_List)
+
+"""old version"""
+# #this version returns an empty list when run in python
+# def Beer_List_Filter(Blist):
+# 	Filtered_Beer_List = []
+# 	filter_resp = raw_input("enter your selection: ")
+# 	if filter_resp == "1":
+# 		Filtered_Beer_List = Beer_List
+# 	elif filter_resp == "2":
+# 		for BEER in Blist:
+# 			if BEER["PType(Keg or PKG)"] == "KEG":
+# 				Filtered_Beer_List.append(BEER)
+# 			else:
+# 				pass
+# 	elif filter_resp == "3":
+# 		for BEER in Blist:
+# 			if BEER["PType(Keg or PKG)"] == "PKG":
+# 				Filtered_Beer_List.append(BEER)
+# 			else:
+# 				pass
+# 	else:
+# 		print "ERROR, please enter a valid selection."
+# 		Beer_List_Filter(Blist)
+
+# 	print Filtered_Beer_List
+
+
+"""
+SORT FUNCTION
+"""
+#template for sorting a list of dictionaries from stackoverflow
+#newlist = sorted(list_to_be_sorted, key=itemgetter('name')) 
+
+def Beer_List_Sort(Blist):
+	Sorted_Beer_List = []
+	sort_resp = raw_input("enter your selection: ")
+	#this prevents users from entering an invalid number selection. It typecasts the str as and int and allows for a conditional
+	while int(sort_resp) <= 0 and int(sort_resp) > 9:
+		sort_resp = raw_input("ERROR, please enter a valid selection: ")
+
+	#sorts by distributor
+	if sort_resp == "1":
+		Sorted_Beer_List = sorted(Blist, key=itemgetter('Distributor'))
+
+	#sorts by brewery
+	elif sort_resp == "2":
+		Sorted_Beer_List = sorted(Blist, key=itemgetter('Brewery'))
+
+	#sorts by ABV
+	#buggy due to non uniform data, does group effectively
+	elif sort_resp == "3":
+		Sorted_Beer_List = sorted(Blist, key=itemgetter('ABV'))
+
+	#sorts by package size
+	#data is not uniform, but this function effectively groups like items
+	elif sort_resp == "4":
+		Sorted_Beer_List = sorted(Blist, key=itemgetter('PSize'))
+
+	#sorts by style
+	elif sort_resp == "5":
+		Sorted_Beer_List = sorted(Blist, key=itemgetter('Style'))
+
+	#sorts by price
+	#data is not uniform, so it sorts first items with a dollar sign, then those without.
+	elif sort_resp == "6":
+		Sorted_Beer_List = sorted(Blist, key=itemgetter('Price'))
+
+	#sorts by name
+	elif sort_resp == "7":
+		Sorted_Beer_List = sorted(Blist, key=itemgetter('Name'))
+
+	#sorts by package type
+	elif sort_resp == "8":
+		Sorted_Beer_List = sorted(Blist, key=itemgetter('PType(Keg or PKG)'))
+
+	#next line for debug
+	return Sorted_Beer_List 
