@@ -1,5 +1,6 @@
 from string import join
 import csv
+import re
 
 Beer_List = []
 
@@ -66,20 +67,146 @@ def Matagrano_Reader(filename):
 
 # This function parses using Regular Expressions
 def Artisan_Reader(filename):
+	#regex for bottled products
+	Art_RE_ml = re.compile('([a-zA-Z0-9 ]+), ([a-zA-Z0-9 ]+), ([a-zA-Z/ ]+)(\d+\.\d+)% (\d+)x(\d+)ml \$(\d+)')
+	Art_RE_oz = re.compile('([a-zA-Z0-9 ]+), ([a-zA-Z0-9 ]+), ([a-zA-Z/ ]+)(\d+\.\d+)% (\d+)x(\d+)oz \$(\d+)')
+	Art_RE_cl = re.compile('([a-zA-Z0-9 ]+), ([a-zA-Z0-9 ]+), ([a-zA-Z/ ]+)(\d+\.\d+)% (\d+)x(\d+\.\d+)cl \$(\d+)')
+	Art_RE_dash = re.compile('([a-zA-Z0-9 ]+), ([a-zA-Z0-9 ]+), ([a-zA-Z/\- ]+)(\d+\.\d+)% (\d+)x(\d+)oz \$(\d+)')
+	#regex for draft products
+	Art_RE_K_l = re.compile('([a-zA-Z0-9 ]+), ([a-zA-Z0-9 ]+), ([a-zA-Z/\- ]+)(\d+\.\d+)% (\d+)L ([a-zA-Z]+) \$(\d+)')
+	Art_RE_K_bbl = re.compile('([a-zA-Z0-9 ]+), ([a-zA-Z0-9 ]+), ([a-zA-Z/\- ]+)(\d+\.\d+)% (\d\/\d) bbl ([a-zA-Z]+) \$(\d+)')
 	with open(filename)as artisan:
 		artisan_raw_list = artisan.readlines()
-	for x in artisan_raw_list:
-		#this splits the raw list into a new list for every line
-		art_item = x.split('\n')
-		#the following removes a consistent extra space that occurs at the end of every line
-		art_item.pop()
-		#this skips (presently) unuseful lines
-		if x ==' ' or x == '' or x == 'U.S.' or x == 'Belgium':
-			pass
-		else:
-			#how can I make it use different regular expressions above and below draft?
-			pass
+		# I should probably write a function that automates the creation of these for loops based on a list of regex (or maybe a dictionary?)
+		for text in artisan_raw_list:
+			Beer = {"Brewery":None, "Name": None, "Style":None, "ABV":None, "Raw_Package_data":None, "PType(Keg or PKG)": None, "PSize":None, "Distributor":"Artisan", "UnitCount":None, "Price":None,}
+			#These are bottle products
+			if Art_RE_ml.search(text) != None:
+				Art_line= Art_RE_ml.search(text)
+				Beer["Brewery"] = Art_line.group(1)
+				Beer["Name"] = Art_line.group(2)
+				Beer["Style"] = Art_line.group(3)
+				Beer["ABV"] = Art_line.group(4)
+				Beer["UnitCount"] = Art_line.group(5)
+				Beer["PSize"] = Art_line.group(6)
+				Beer["Price"] = Art_line.group(7)
+				Beer["PType(Keg or PKG)"] = "PKG"
+				Beer["Raw_Package_data"] = Art_line.group(5), "x", Art_line.group(6)
+				Beer_List.append(Beer)
+			elif Art_RE_oz.search(text) != None:
+				Art_line = Art_RE_oz.search(text)
+				Beer["Brewery"] = Art_line.group(1)
+				Beer["Name"] = Art_line.group(2)
+				Beer["Style"] = Art_line.group(3)
+				Beer["ABV"] = Art_line.group(4)
+				Beer["UnitCount"] = Art_line.group(5)
+				Beer["PSize"] = Art_line.group(6)
+				Beer["Price"] = Art_line.group(7)
+				Beer["PType(Keg or PKG)"] = "PKG"
+				Beer["Raw_Package_data"] = Art_line.group(5), "x", Art_line.group(6)
+				Beer_List.append(Beer)
+			elif Art_RE_cl.search(text) != None:
+				Art_line = Art_RE_cl.search(text)
+				Beer["Brewery"] = Art_line.group(1)
+				Beer["Name"] = Art_line.group(2)
+				Beer["Style"] = Art_line.group(3)
+				Beer["ABV"] = Art_line.group(4)
+				Beer["UnitCount"] = Art_line.group(5)
+				Beer["PSize"] = Art_line.group(6)
+				Beer["Price"] = Art_line.group(7)
+				Beer["PType(Keg or PKG)"] = "PKG"
+				Beer["Raw_Package_data"] = Art_line.group(5), "x", Art_line.group(6)
+				Beer_List.append(Beer)
+			elif Art_RE_dash.search(text) != None:
+				Art_line = Art_RE_dash.search(text)
+				Beer["Brewery"] = Art_line.group(1)
+				Beer["Name"] = Art_line.group(2)
+				Beer["Style"] = Art_line.group(3)
+				Beer["ABV"] = Art_line.group(4)
+				Beer["UnitCount"] = Art_line.group(5)
+				Beer["PSize"] = Art_line.group(6)
+				Beer["Price"] = Art_line.group(7)
+				Beer["PType(Keg or PKG)"] = "PKG"
+				Beer["Raw_Package_data"] = Art_line.group(5), "x", Art_line.group(6)
+				Beer_List.append(Beer)
+			#These are Kegged products
+			elif Art_RE_K_bbl.search(text) != None:
+				Art_line = Art_RE_K_bbl.search(text)
+				Beer["Brewery"] = Art_line.group(1)
+				Beer["Name"] = Art_line.group(2)
+				Beer["Style"] = Art_line.group(3)
+				Beer["ABV"] = Art_line.group(4)
+				Beer["UnitCount"] = 1
+				Beer["PSize"] = Art_line.group(5)
+				Beer["Price"] = Art_line.group(7)
+				Beer["PType(Keg or PKG)"] = Art_line.group(6)
+				Beer["Raw_Package_data"] = Art_line.group(5), "bbl", Art_line.group(6)
+				if Beer["PSize"] == "1/2":
+					Beer["PSize"] = "15.5"
+				elif Beer["PSize"] == "1/6":
+					Beer["PSize"] = "5"
+				Beer_List.append(Beer)
+			elif Art_RE_K_l.search(text) != None:
+				Art_line = Art_RE_K_l.search(text)
+				Beer["Brewery"] = Art_line.group(1)
+				Beer["Name"] = Art_line.group(2)
+				Beer["Style"] = Art_line.group(3)
+				Beer["ABV"] = Art_line.group(4)
+				Beer["UnitCount"] = 1
+				Beer["PSize"] = Art_line.group(5)
+				Beer["Price"] = Art_line.group(7)
+				Beer["PType(Keg or PKG)"] = Art_line.group(6)
+				Beer["Raw_Package_data"] = Art_line.group(5), "L", Art_line.group(6)
+				Beer_List.append(Beer)
+			else:
+				pass
 
+
+
+
+
+"""old code"""
+		# #this splits the raw list into a new list for every line
+		# art_item = x.split('\n')
+		# #the following removes a consistent extra space that occurs at the end of every line
+		# art_item.pop()
+					# for text in artisan:
+			# 	Art_line= Art_RE_ml.search(text)
+			# 	if Art_line == None:
+			# 		pass
+			# 	else:
+			# 		print Art_line.group()
+#more old code
+			# for text in artisan:
+			# 	Art_line = Art_RE_oz.search(text)
+			# 	if Art_line == None:
+			# 		pass
+			# 	else:
+			# 		print Art_line.group()
+				
+			# for text in artisan:
+			# 	Art_line = Art_RE_cl.search(text)
+			# 	if Art_line == None:
+			# 		pass
+			# 	else:
+			# 		print Art_line.group()
+
+			# for text in artisan:
+			# 	Art_line = Art_RE_dash.search(text)
+			# 	if Art_line == None:
+			# 		pass
+			# 	else:
+			# 		print Art_line.group()
+
+	# 	artisan_raw_list = artisan.readlines()
+	# for x in artisan_raw_list:
+	# 	#this skips (presently) unuseful lines
+	# 	if x ==' ' or x == '' or x == 'U.S.' or x == 'Belgium':
+	# 		pass
+	# 	else:
+	
+
+	# print artisan_raw_list
 
 #This Function parses information from a CSV file
 def Henhouse_Reader(filename): #sTILL NEED TO REMOVE BLANKS FROM BEER LIST
@@ -161,3 +288,47 @@ These call the function(s) and prints the results
 # Henhouse_Reader("Henhouse_Sample.csv")
 # DBI_Reader("DBI_Sample_list.csv")
 # print Beer_List
+
+
+#next line for testing
+# print "Welcome, Beer Buyer"
+#This asks the user if they want to upload a Matagrano file, then runs the reader function:
+def Mat_Choose_File():
+	Mat_Q = raw_input("Would you like to choose a Matragrano file? Y or N: ")
+	if Mat_Q == "Y" or Mat_Q == "y":
+		Filename = raw_input("Please type the complete filename: ")
+		Matagrano_Reader(Filename)
+	else:
+		pass
+
+#Does the same for DBI
+#This asks the user if they want to upload a Matagrano file, then runs the reader function:
+def DBI_Choose_File():
+	DBI_Q = raw_input("Would you like to choose a DBI file? Y or N: ")
+	if DBI_Q == "Y" or DBI_Q == "y":
+		Filename = raw_input("Please type the complete filename: ")
+		DBI_Reader(Filename)
+	else:
+		pass
+
+def Art_Choose_File():
+	Art_Q = raw_input("Would you like to choose an Artisan file? Y or N: ")
+	if Art_Q == "Y" or Art_Q == "y":
+		Filename = raw_input("Please type the complete filename: ")
+		Artisan_Reader(Filename)
+	else:
+		pass
+
+
+def Hen_Choose_File():
+	Hen_Q = raw_input("Would you like to choose a Henhouse file? Y or N: ")
+	if Hen_Q == "Y" or Hen_Q == "y":
+		Filename = raw_input("Please type the complete filename: ")
+		Henhouse_Reader(Filename)
+	else:
+		pass
+
+
+"""Testing for file choosing below"""
+#Mat_Choose_File()
+# DBI_Choose_File()
