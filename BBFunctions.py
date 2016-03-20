@@ -301,7 +301,6 @@ FILTER FUNCTIONS
 """
 # Testing_List = [{'Raw_Package_data': ('1/2', 'bbl', 'keg'), 'Style': 'Tuple Ale ', 'Name': 'Nut Brown', 'ABV': '5.0', 'Distributor': 'Artisan', 'Price': '190', 'UnitCount': 1, 'PType(Keg or PKG)': 'KEG', 'Brewery': 'AleSmith Brewing', 'PSize': '15.5'},{'Raw_Package_data': ('1/2', 'bbl', 'keg'), 'Style': 'English-Style Ale ', 'Name': 'Python Beer', 'ABV': '6.66', 'Distributor': 'hacker', 'Price': '3', 'UnitCount': 1, 'PType(Keg or PKG)': 'KEG', 'Brewery': 'Python Brewing', 'PSize': '15.5'}, {'Raw_Package_data': ('1/6', 'bbl', 'keg'), 'Style': 'English-Style Ale ', 'Name': 'Nut Brown', 'ABV': '5.0', 'Distributor': 'Artisan', 'Price': '90', 'UnitCount': 1, 'PType(Keg or PKG)': 'PKG', 'Brewery': 'AleSmith Brewing', 'PSize': '5'}]
 
-
 def Beer_List_Filter(Blist):
 	Filtered_Beer_List = []
 	filter_resp = raw_input("enter your selection: ")
@@ -402,3 +401,10 @@ def Beer_List_Sort(Blist):
 
 	#next line for debug
 	return Sorted_Beer_List 
+
+""" SELECTION FUNCTIONS """
+def selection_helper(sel_list):
+	selection = raw_input("Enter your selection: ")
+	selection = int(selection)
+	sel_list.append(selection)
+	return sel_list
