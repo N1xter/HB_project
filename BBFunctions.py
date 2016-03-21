@@ -6,6 +6,20 @@ from operator import itemgetter
 Beer_List = []
 
 """READER FUNCTIONS"""
+#this function is used by all readers to check for missing info.
+def BKeys_Check(Beer):
+	Bkeys = Beer.keys()
+	for key in Bkeys:
+		# check for empty strings and null type, both of the blanks I may get.
+		if Beer[key] == '' or Beer[key] == None:
+			#skip extra info
+			if key == "Extra_Info":
+				pass
+			else:
+				Prompt_text = "For the Beer:", Beer["Brewery"], Beer["Name"], Beer["Raw_Package_data"], "Please enter the", key, ": "
+				Beer[key] = raw_input(Prompt_text)
+
+
 #This function uses various parsing techniques to create a list of dictionaries. Each dictionary is one beer.
 def Matagrano_Reader(filename):
 	#open the file
@@ -56,18 +70,16 @@ def Matagrano_Reader(filename):
 				Beer["UnitCount"] = 12
 				Beer["PSize"] = "22"
 				Beer["PType(Keg or PKG)"] = "PKG"
+			#the rest of the leftover text is the beer name, so I joined those strings together using .join
 			Beer["Name"] = join(Mat_item," ")
-			# print Beer["Name"]
-			""" this prompts for user inputs when the value is None"""
-			Bkeys = Beer.keys()
-			for key in Bkeys:
-				if Beer[key] == None:
-					Prompt_text = "For the Beer:", Beer["Brewery"], Beer["Name"], Beer["Raw_Package_data"], "Please enter the", key, ": "
-					Beer[key] = raw_input(Prompt_text)
+			#fill in missing info
+			BKeys_Check(Beer)
+			#add the Beer dictionary to the list of dictionaries
 			Beer_List.append(Beer)
 
 
 # This function parses using Regular Expressions
+# to do: add a missing values function
 def Artisan_Reader(filename):
 	#regex for bottled products
 	Art_RE_ml = re.compile('([a-zA-Z0-9 ]+), ([a-zA-Z0-9 ]+), ([a-zA-Z/ ]+)(\d+\.\d+)% (\d+)x(\d+)ml \$(\d+)')
@@ -94,6 +106,7 @@ def Artisan_Reader(filename):
 				Beer["Price"] = Art_line.group(7)
 				Beer["PType(Keg or PKG)"] = "PKG"
 				Beer["Raw_Package_data"] = Art_line.group(5), "x", Art_line.group(6)
+				BKeys_Check(Beer)
 				Beer_List.append(Beer)
 			elif Art_RE_oz.search(text) != None:
 				Art_line = Art_RE_oz.search(text)
@@ -106,6 +119,7 @@ def Artisan_Reader(filename):
 				Beer["Price"] = Art_line.group(7)
 				Beer["PType(Keg or PKG)"] = "PKG"
 				Beer["Raw_Package_data"] = Art_line.group(5), "x", Art_line.group(6)
+				BKeys_Check(Beer)
 				Beer_List.append(Beer)
 			elif Art_RE_cl.search(text) != None:
 				Art_line = Art_RE_cl.search(text)
@@ -118,6 +132,7 @@ def Artisan_Reader(filename):
 				Beer["Price"] = Art_line.group(7)
 				Beer["PType(Keg or PKG)"] = "PKG"
 				Beer["Raw_Package_data"] = Art_line.group(5), "x", Art_line.group(6)
+				BKeys_Check(Beer)
 				Beer_List.append(Beer)
 			elif Art_RE_dash.search(text) != None:
 				Art_line = Art_RE_dash.search(text)
@@ -130,6 +145,7 @@ def Artisan_Reader(filename):
 				Beer["Price"] = Art_line.group(7)
 				Beer["PType(Keg or PKG)"] = "PKG"
 				Beer["Raw_Package_data"] = Art_line.group(5), "x", Art_line.group(6)
+				BKeys_Check(Beer)
 				Beer_List.append(Beer)
 			#These are Kegged products
 			elif Art_RE_K_bbl.search(text) != None:
@@ -147,6 +163,7 @@ def Artisan_Reader(filename):
 					Beer["PSize"] = "15.5"
 				elif Beer["PSize"] == "1/6":
 					Beer["PSize"] = "5"
+				BKeys_Check(Beer)
 				Beer_List.append(Beer)
 			elif Art_RE_K_l.search(text) != None:
 				Art_line = Art_RE_K_l.search(text)
@@ -159,18 +176,18 @@ def Artisan_Reader(filename):
 				Beer["Price"] = Art_line.group(7)
 				Beer["PType(Keg or PKG)"] = "KEG"
 				Beer["Raw_Package_data"] = Art_line.group(5), "L", Art_line.group(6)
+				BKeys_Check(Beer)
 				Beer_List.append(Beer)
 			else:
 				pass
 
-
 #This Function parses information from a CSV file
-def Henhouse_Reader(filename): #sTILL NEED TO REMOVE BLANKS FROM BEER LIST
+def Henhouse_Reader(filename): #does not work if ABV of beer is missing
 	with open(filename) as henhouse:
 		henhouse_csv = csv.reader(henhouse)
 		for row in henhouse_csv:
 			Beer = {"Brewery":None, "Name": None, "Style":None, "ABV":None, "Raw_Package_data":None, "PType(Keg or PKG)": None, "PSize":None, "Distributor":None, "UnitCount":None, "Price":None,}
-			if row[1] == '':
+			if row[5] == '':
 				BREW = row[0]
 			else:
 				Beer["Name"] = row[0]
@@ -184,13 +201,9 @@ def Henhouse_Reader(filename): #sTILL NEED TO REMOVE BLANKS FROM BEER LIST
 				Beer["PType(Keg or PKG)"] = "KEG"
 				Beer["Raw_Package_data"] = Beer["PSize"]
 				Beer["UnitCount"] = 1
-				Bkeys = Beer.keys()
-				for key in Bkeys:
-					if Beer[key] == None:
-						Prompt_text = "For the Beer:", Beer["Brewery"], Beer["Name"], Beer["Raw_Package_data"], "Please enter the", key, ": "
-						Beer[key] = raw_input(Prompt_text)
+				BKeys_Check(Beer)
 				Beer_List.append(Beer)
-	
+				
 #THis function adds dictionaries to the beer list from a CSV, and changes certain values for uniformity
 def DBI_Reader(filename):
 	with open(filename) as DBI:
@@ -222,31 +235,11 @@ def DBI_Reader(filename):
 			Beer["Distributor"] = "DBI"
 			Beer["Raw_Package_data"] = " "
 			Beer["UnitCount"] = UNIT
-			#below asks for user input for fields still marked "None"
-			Bkeys = Beer.keys()
-			for key in Bkeys:
-				if Beer[key] == None:
-					Prompt_text = "For the Beer:", Beer["Brewery"], Beer["Name"], Beer["Raw_Package_data"], "Please enter the", key, ": "
-					Beer[key] = raw_input(Prompt_text)
+			#below asks for user input for fields still marked None or ''
+			BKeys_Check(Beer)
 			#adds the dictionary to the list before moving to the next line
 			Beer_List.append(Beer)
 
-
-
-"""
-TESTING 
-These call the function(s) and prints the results 
-(DO NOT run in Sublime as user input is required!)
-"""
-
-# Matagrano_Reader("Matagrano_sample.txt")
-# Artisan_Reader("Artisan_Sample_List.txt")
-# Henhouse_Reader("Henhouse_Sample.csv")
-# DBI_Reader("DBI_Sample_list.csv")
-# print Beer_List
-
-
-#next line for testing
 
 """FILE CHOOSING FUNCTIONS"""
 """
@@ -290,19 +283,15 @@ def Hen_Choose_File():
 		pass
 
 
-"""Testing for file choosing below"""
-#Mat_Choose_File()
-# DBI_Choose_File()
-
-
-
 """
 FILTER FUNCTIONS
 """
 # Testing_List = [{'Raw_Package_data': ('1/2', 'bbl', 'keg'), 'Style': 'Tuple Ale ', 'Name': 'Nut Brown', 'ABV': '5.0', 'Distributor': 'Artisan', 'Price': '190', 'UnitCount': 1, 'PType(Keg or PKG)': 'KEG', 'Brewery': 'AleSmith Brewing', 'PSize': '15.5'},{'Raw_Package_data': ('1/2', 'bbl', 'keg'), 'Style': 'English-Style Ale ', 'Name': 'Python Beer', 'ABV': '6.66', 'Distributor': 'hacker', 'Price': '3', 'UnitCount': 1, 'PType(Keg or PKG)': 'KEG', 'Brewery': 'Python Brewing', 'PSize': '15.5'}, {'Raw_Package_data': ('1/6', 'bbl', 'keg'), 'Style': 'English-Style Ale ', 'Name': 'Nut Brown', 'ABV': '5.0', 'Distributor': 'Artisan', 'Price': '90', 'UnitCount': 1, 'PType(Keg or PKG)': 'PKG', 'Brewery': 'AleSmith Brewing', 'PSize': '5'}]
 
 def Beer_List_Filter(Blist):
+	#start with an empty list
 	Filtered_Beer_List = []
+	#see selection option in printet text in main program
 	filter_resp = raw_input("enter your selection: ")
 	while filter_resp != "1" and filter_resp != "2"and filter_resp != "3":
 		print "ERROR, you did not enter a valid selection."
@@ -318,47 +307,13 @@ def Beer_List_Filter(Blist):
 				if BEER["PType(Keg or PKG)"] == "PKG":
 					Filtered_Beer_List.append(BEER)
 	return Filtered_Beer_List
-			# else:
-			# 	print "ERROR, you did not enter a valid selection."
-			# 	#I would like to be able to call the function again/start over if this error is acchieved.
-
-#next line for testing
-# Beer_List_Filter(Beer_List)
-
-"""old version"""
-# #this version returns an empty list when run in python
-# def Beer_List_Filter(Blist):
-# 	Filtered_Beer_List = []
-# 	filter_resp = raw_input("enter your selection: ")
-# 	if filter_resp == "1":
-# 		Filtered_Beer_List = Beer_List
-# 	elif filter_resp == "2":
-# 		for BEER in Blist:
-# 			if BEER["PType(Keg or PKG)"] == "KEG":
-# 				Filtered_Beer_List.append(BEER)
-# 			else:
-# 				pass
-# 	elif filter_resp == "3":
-# 		for BEER in Blist:
-# 			if BEER["PType(Keg or PKG)"] == "PKG":
-# 				Filtered_Beer_List.append(BEER)
-# 			else:
-# 				pass
-# 	else:
-# 		print "ERROR, please enter a valid selection."
-# 		Beer_List_Filter(Blist)
-
-# 	print Filtered_Beer_List
-
 
 """
 SORT FUNCTION
 """
-#template for sorting a list of dictionaries from stackoverflow
-#newlist = sorted(list_to_be_sorted, key=itemgetter('name')) 
-
 def Beer_List_Sort(Blist):
 	Sorted_Beer_List = []
+	#see main program for text of options
 	sort_resp = raw_input("enter your selection: ")
 	#this prevents users from entering an invalid number selection. It typecasts the str as and int and allows for a conditional
 	while int(sort_resp) <= 0 and int(sort_resp) > 9:

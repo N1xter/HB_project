@@ -37,13 +37,6 @@ print "by Package Type (keg or bottle/can), press 8"
 Sorted_Beer_List = Beer_List_Sort(Filtered_Beer_List)
 """SELECTION"""
 """(A.) write to CSV"""
-"""
-Because dictionaries have no order, the list that is produced comes out in random grouped chunks.
-I am going to try using a PANDAS dataframe instead.
-
-UPDATE: Nevermind, I found a work around from CSV instead... 
-I still want to learn PANDAS at some point...
-"""
 #this presents the order to write the fields to csv
 field_names = ["Brewery", "Name",  "PType(Keg or PKG)", "PSize", "UnitCount", "Price", "Distributor", "Style", "ABV", "Raw_Package_data", "Extra_Info"]
 #can I add a time stamp to the beer list?
@@ -51,23 +44,6 @@ with open('Beer_List.csv', 'w') as BL:
     fp = csv.DictWriter(BL, field_names)
     fp.writeheader()
     fp.writerows(Sorted_Beer_List)
-
-"""old code"""
-#this prepares the Sorted beer list for writing to CSV by making each dictionary a list.
-# list_of_lists = []
-# for D in Sorted_Beer_List:
-# 	dict_to_list = D.values()
-# 	list_of_lists.append(dict_to_list)
-#next two lines for debug
-# print list_of_lists
-# list_of_lists = list_of_lists.split()
-
-#this writes the csv file, "Beer_Select.csv" with the selected portion of the beer list
-# dictCsv = open("Beer_Select.csv", "w")
-# writer = csv.writer(dictCsv)
-# for x in list_of_lists:
-# 	writer.writerow(x)
-# dictCsv.close()
 
 """(B.) SELECTION - User Input"""
 #tell ser what to do
@@ -80,6 +56,7 @@ print "Type the first row number for the beer you would like to purchase, then p
 # set up empty strings and lists to keep the variable global
 selection = ''
 selection_list = []
+#start with Q equaling anything BUT 'n' or 'N' in order for conditional in while loop to be true
 Q = "Y"
 # call the function that appends the selection list based on UI
 # works until the user types 'n' to stop the loop
