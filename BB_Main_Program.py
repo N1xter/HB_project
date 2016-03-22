@@ -76,6 +76,8 @@ while index < len(selection_list):
 #next line for debug
 #print selection_list
 
+
+"""CREATE PURCHASE ORDER"""
 #the program then writes the selected beer info to a new list, 1 per distributor
 #empty order list
 Order_List = []
@@ -97,17 +99,21 @@ for x in Order_List:
 		DBI_Buylist.append(x)
 	elif  x["Distributor"] == "Henhouse":
 		Hen_Buylist.append(x)
+#calls function to generate TXT purchase order files
+Beer_Order(Mat_Buylist)
+Beer_Order(Art_Buylist)
+Beer_Order(DBI_Buylist)
+Beer_Order(Hen_Buylist)
 
-print "To order fromn Matagrano: "
-print Mat_Buylist
-print "To order fromn Artisan: "
-print Art_Buylist
-print "To order fromn DBI: "
-print DBI_Buylist
-print "To order fromn Henhouse: "
-print Hen_Buylist
+# print "To order fromn Matagrano: "
+# print Mat_Buylist
+# print "To order fromn Artisan: "
+# print Art_Buylist
+# print "To order fromn DBI: "
+# print DBI_Buylist
+# print "To order fromn Henhouse: "
+# print Hen_Buylist
 
-
-
-#those distributor lists are then formatted into text in a .txt file
-# print Beer_List
+"""EXIT MESSAGE"""
+print "Your files are now ready to view and use in this directory."
+print "Cheers!"

@@ -363,3 +363,21 @@ def selection_helper(sel_list):
 	selection = int(selection)
 	sel_list.append(selection)
 	return sel_list
+
+
+""" PURCHASE ORDER CREATION FUNCTIONS """
+def Beer_Order(Dlist):
+	if len(Dlist) > 0:
+		if Dlist[0]["Distributor"] == "Matagrano":
+			filename = "MyBar_Beer_Order_for_Matagrano.txt"
+		if Dlist[0]["Distributor"] == "Artisan":
+			filename = "MyBar_Beer_Order_for_Artisan.txt"
+		if Dlist[0]["Distributor"] == "DBI":
+			filename = "MyBar_Beer_Order_for_DBI.txt"
+		if Dlist[0]["Distributor"] == "Henhouse":
+			filename = "MyBar_Beer_Order_for_Henhouse.txt"
+
+		with open(filename, "w") as beerorder: 
+			beerorder.write("MyBar Beer order for:\r\n\r\n Quant - BREWERY   -----   Beer Name   -----   Package - Size\r\n")
+			for x in Dlist:
+				beerorder.write("   1  %s %s %s %s" % (x["Brewery"], x["Name"], x["PType(Keg or PKG)"], x["PSize"]))
